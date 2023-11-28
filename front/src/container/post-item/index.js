@@ -6,10 +6,10 @@ import PostCreate from "../post-create";
 
 import PostContent from "../../component/post-content";
 
-import { Alert, Skeleton, LOAD_STATUS } from "../../component/load";
+import { Alert, Skeleton } from "../../component/load";
 
 import { getDate } from "../util/getDate";
-import { useState, Fragment, useReducer, useEffect } from "react";
+import { useState, Fragment, useReducer, useEffect, useCallback } from "react";
 
 import {
   requestInitialState,
@@ -24,7 +24,7 @@ export default function Container({ id, username, text, date }) {
     (state) => ({ ...state, data: { id, username, text, date, reply: null } })
   );
 
-  const getData = async () => {
+  const getData = useCallback(async () => {
     dispatch({ type: REQUEST_ACTION_TYPE.PROGRESS });
     try {
       const res = await fetch(
@@ -50,7 +50,7 @@ export default function Container({ id, username, text, date }) {
         payload: error.message,
       });
     }
-  };
+  }, [state.data.id]);
 
   const convertData = ({ post }) => ({
     id: post.id,
@@ -108,7 +108,7 @@ export default function Container({ id, username, text, date }) {
               />
             </Box>
 
-            {state.status === LOAD_STATUS.PROGRESS && (
+            {state.status === REQUEST_ACTION_TYPE.PROGRESS && (
               <Fragment>
                 <Box>
                   <Skeleton />
@@ -119,11 +119,11 @@ export default function Container({ id, username, text, date }) {
               </Fragment>
             )}
 
-            {state.status === LOAD_STATUS.ERROR && (
+            {state.status === REQUEST_ACTION_TYPE.ERROR && (
               <Alert status={state.status} message={state.message} />
             )}
 
-            {state.status === LOAD_STATUS.SUCCESS &&
+            {state.status === REQUEST_ACTION_TYPE.SUCCESS &&
               state.data.isEmpty === false &&
               state.data.reply.map((item) => (
                 <Fragment key={item.id}>
